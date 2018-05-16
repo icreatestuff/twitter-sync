@@ -42,20 +42,20 @@ use yii\base\Event;
  * @package   TwitterSyncService
  * @since     1.0.0
  *
- * @property  twitterSyncServiceService $twitterSyncService
+ * @property  twitterSync $twitterSync
  * @property  Settings $settings
  * @method    Settings getSettings()
  */
-class TwitterSyncService extends Plugin
+class TwitterSync extends Plugin
 {
     // Static Properties
     // =========================================================================
 
     /**
      * Static property that is an instance of this plugin class so that it can be accessed via
-     * TwitterSyncService::$plugin
+     * TwitterSync::$plugin
      *
-     * @var TwitterSyncService
+     * @var TwitterSync
      */
     public static $plugin;
     public $hasCpSettings = true;
@@ -259,10 +259,13 @@ class TwitterSyncService extends Plugin
         }
 
         // Save the settings based on the section and entry type we just created
-        Craft::$app->getPlugins()->savePluginSettings($this, [
-            'sectionId'     => $tweetsChannelSection->id,
-            'entryTypeId'   => $tweetsEntryTypes->id
-        ]);
+        // Craft::$app->getPlugins()->savePluginSettings($this, [
+        //     'sectionId'     => $tweetsChannelSection->id,
+        //     'entryTypeId'   => $tweetsEntryTypes->id
+        // ]);
+
+        $this->setSettings()->sectionId = $tweetsChannelSection->id;
+        $this->setSettings()->entryTypeId = $tweetsEntryTypes->id;
     }
 
 
