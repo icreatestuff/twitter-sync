@@ -1,0 +1,54 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * TwitterSync plugin for Craft CMS 3.x
+ *
+* TwitterSync Settings.twig
+ *
+ * @author    Boxhead
+ * @copyright Copyright (c) 2018 Boxhead
+ * @link      https://boxhead.io
+ * @package   TwitterSync
+ * @since     1.0.0
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+    label: 'Twitter Application API Key',
+    instructions: 'Enter the API Key you have been issued from https://apps.twitter.com/',
+    id: 'apiKey',
+    name: 'apiKey',
+    value: settings['apiKey']})
+}}
+
+{{ forms.textField({
+    label: 'Twitter Application API Secret',
+    instructions: 'Enter the API Secret you have been issued from https://apps.twitter.com/',
+    id: 'apiSecret',
+    name: 'apiSecret',
+    value: settings['apiSecret']})
+}}
+
+{{ forms.textField({
+    label: 'Twitter Screen Names / Usernames',
+    instructions: 'Comma separated list of Twitter screen names to sync tweets from',
+    id: 'screenNames',
+    name: 'screenNames',
+    value: settings['screenNames']})
+}}
+
+{{ forms.textField({
+    label: 'Section ID',
+    id: 'sectionId',
+    name: 'sectionId',
+    value: settings['sectionId']})
+}}
+
+{{ forms.textField({
+    label: 'Entry Type ID',
+    id: 'entryTypeId',
+    name: 'entryTypeId',
+    value: settings['entryTypeId']})
+}}
