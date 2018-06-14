@@ -12,13 +12,14 @@ namespace boxhead\twittersync\services;
 
 use boxhead\twittersync\TwitterSync;
 
+use Abraham\TwitterOAuth\TwitterOAuth;
+
 use Craft;
 use craft\base\Component;
 use craft\elements\Entry;
 use craft\elements\Category;
 use craft\helpers\ElementHelper;
 use craft\helpers\DateTimeHelper;
-use Abraham\TwitterOauth\TwitterOauth;
 
 /**
  * TwitterSyncService Service
@@ -69,13 +70,40 @@ class TwitterSyncService extends Component
         // Request & sync data from the API
         $this->remoteData = $this->getAPIData();
 
+        // Determine which entries we are missing by id
+        $missingIds = array_diff($this->remoteData['ids'], $this->localData['ids']);
+
         // Determine which entries we shouldn't have by id
         $removedIds = array_diff($this->localData['ids'], $this->remoteData['ids']);
 
-        // If we have local data that doesn't match with anything from remote we should close the local entry
+        // Determine which entries need updating (all active entries which we aren't about to create)
+        $updatingIds = array_diff($this->remoteData['ids'], $missingIds);
+
+        // For each missing id
+        foreach ($missingIds as $id) {
+            // Create this entry
+            $this->createEntry($this->remoteData['tweets'][$id]);
+        }
+
+        // For each redundant entry
         foreach ($removedIds as $id) {
+            // Disable it
             $this->closeEntry($this->localData['tweets'][$id]);
         }
+
+        // For each updating track
+        foreach ($updatingIds as $id) {
+            $this->updateEntry($this->localData['tweets'][$id], $this->remoteData['tweets'][$id]);
+        }
+
+
+        // // Determine which entries we shouldn't have by id
+        // $removedIds = array_diff($this->localData['ids'], $this->remoteData['ids']);
+
+        // // If we have local data that doesn't match with anything from remote we should close the local entry
+        // foreach ($removedIds as $id) {
+        //     $this->closeEntry($this->localData['tweets'][$id]);
+        // }
 
         Craft::info('TwitterSync: Finished', __METHOD__);
 
@@ -293,10 +321,10 @@ class TwitterSyncService extends Component
         // Set the other content
         $entry->setFieldValues([
             'tweetId'           => $data->id_str,
-            'tweetText'         => $this->formatTweetText($data->text),
+            'tweetText'         => $this->formatTweetText($data),
             'tweetUserId'		=> $data->user->id_str,
             'tweetScreenName'   => $data->screen_name,
-            'tweetPageUrl'      => $this->constructTweetPageUrl($tweet)
+            'tweetPageUrl'      => $this->constructTweetPageUrl($data)
         ]);
 
         // Save the entry!
@@ -320,23 +348,20 @@ class TwitterSyncService extends Component
         $this->connection = new TwitterOAuth($this->settings->apiKey, $this->settings->apiSecret);
     }
 
-    private function formatTweetText($text) {
+    private function formatTweetText($tweet) {
         // Escape any quotes
-        $text = htmlspecialchars($text, ENT_QUOTES);
+        $text = htmlspecialchars($tweet->text, ENT_QUOTES);
         
         // If there are any user mentions in the tweet, insert the relevant html here
-        if (!empty($tweet->entities->user_mentions))
-        {
-            foreach ($tweet->entities->user_mentions as $user_mention)
-            {
+        if (!empty($tweet->entities->user_mentions)) {
+            foreach ($tweet->entities->user_mentions as $user_mention) {
                 $screen_name = $user_mention->screen_name;
                 $text = str_replace('@' . $screen_name, '<a href="http://twitter.com/' . $screen_name . '" target="_blank">' . '@' . $screen_name . '</a>', $text);
             }
         }
 
         // If there are any links in the tweet, insert the relevant html here
-        if (!empty($tweet->entities->urls))
-        {
+        if (!empty($tweet->entities->urls)) {
             foreach ($tweet->entities->urls as $link) {
                 $url = $link->url;
                 $expanded_url = $link->expanded_url;
@@ -345,16 +370,14 @@ class TwitterSyncService extends Component
         }
 
         // If there are any media contents, these won't show here and will just output a messy link - remove them
-        if (!empty($tweet->entities->media))
-        {
-            foreach($tweet->entities->media as $media)
-            {
+        if (!empty($tweet->entities->media)) {
+            foreach($tweet->entities->media as $media) {
                 $url = $media->url;
                 $text = str_replace($url, '', $text);
             }
         }
 
-        return $text;
+        return '<p>' . $text . '</p>';
     }
 
     private function constructTweetPageUrl($tweet) {
