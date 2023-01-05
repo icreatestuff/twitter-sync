@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2018 Boxhead
  */
 
-namespace boxhead\twittersync\assetbundles\TwitterSync;
+namespace boxhead\twittersync\assetbundles;
 
 use Craft;
 use craft\web\AssetBundle;
