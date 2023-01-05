@@ -1,7 +1,7 @@
 {
   "name": "boxhead/twitter-sync",
   "description": "Communicate and process data from the Twitter API",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "type": "craft-plugin",
   "keywords": [
     "craft",
